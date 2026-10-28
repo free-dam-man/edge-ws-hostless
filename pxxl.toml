@@ -1,7 +1,0 @@
-version = 1
-
-[build]
-language = "docker"
-framework = "dockerfile"
-runtime = "docker"
-port = 8080
