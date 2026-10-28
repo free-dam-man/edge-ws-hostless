@@ -10,7 +10,8 @@ function get(u, file) {
     const f = fs.createWriteStream(file);
     https.get(u, { headers: { 'User-Agent': 'edge-ws' } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        f.close(); try{fs.unlinkSync(file)}catch(e){}; return get(res.headers.location, file).then(resolve, reject);
+        f.close(); try { fs.unlinkSync(file); } catch (e) {}
+        return get(res.headers.location, file).then(resolve, reject);
       }
       if (res.statusCode !== 200) return reject(new Error('HTTP ' + res.statusCode));
       res.pipe(f); f.on('finish', () => f.close(resolve));
@@ -18,9 +19,12 @@ function get(u, file) {
   });
 }
 (async () => {
-  if (!fs.existsSync(bin)) {
+  if (!fs.existsSync(bin) || !fs.existsSync(path.join(__dirname, 'geoip.dat'))) {
     await get(url, zip);
-    execSync('unzip -o -q xray.zip xray -d . && mv -f xray web-worker && chmod +x web-worker && rm -f xray.zip', { cwd: __dirname });
+    execSync('unzip -o -q xray.zip && mv -f xray web-worker && chmod +x web-worker && rm -f xray.zip LICENSE README.md', { cwd: __dirname, stdio: 'inherit' });
+  }
+  for (const f of ['geoip.dat', 'geosite.dat']) {
+    if (!fs.existsSync(path.join(__dirname, f))) throw new Error('missing ' + f);
   }
   console.log('setup ok');
 })().catch((e) => { console.error(e); process.exit(1); });
